@@ -1,6 +1,8 @@
 package produtos
 
 import (
+	"context"
+
 	"github.com/hsxflowers/vendas-api/exceptions"
 	"github.com/hsxflowers/vendas-api/produtos/domain"
 	"github.com/labstack/gommon/log"
@@ -18,19 +20,16 @@ func NewProdutosService(repo domain.ProdutosStorage, consumer ServiceConsumer) d
 	}
 }
 
-func (s *Service) Create(req *domain.ProdutosRequest) (*domain.CodigoRastreio, error) {
+func (s *Service) Create(ctx context.Context, req *domain.ProdutosRequest) (*domain.CodigoRastreio, error) {
 	log.Debug("[POST - Create] - Request processed by service ")
 
 	for _, prod := range req.Produtos {
 		produto := prod.ToProdutosDomain()
 
-		quantidade, err := s.repo.VerificaDisponibilidade(produto)
+		quantidade, err := s.repo.VerificaDisponibilidade(ctx, produto)
 		switch {
 		case err != nil:
 			return nil, err
-		case quantidade == 0:
-			log.Error("create_produto_service: produto not available")
-			return nil, exceptions.New(exceptions.ErrProdutosNotFound, nil)
 		case quantidade < produto.Quantidade:
 			log.Error("create_produto_service: produto not available")
 			return nil, exceptions.New(exceptions.ErrProdutosNotEnough, nil)
@@ -46,7 +45,7 @@ func (s *Service) Create(req *domain.ProdutosRequest) (*domain.CodigoRastreio, e
 		for _, prod := range req.Produtos {
 			produto := prod.ToProdutosDomain()
 
-			err := s.repo.RemoveQuantidade(produto)
+			err := s.repo.RemoveQuantidade(ctx, produto)
 			if err != nil {
 				return nil, err
 			}
@@ -77,7 +76,7 @@ func (s *Service) Create(req *domain.ProdutosRequest) (*domain.CodigoRastreio, e
 func (s *Service) toPagamento(produto *domain.ProdutosRequest) *domain.ProdutosPagamento {
 	var valor float64
 	for _, prod := range produto.Produtos {
-		valor = prod.Valor * float64(prod.Quantidade)
+		valor += prod.Valor * float64(prod.Quantidade)
 	}
 
 	return &domain.ProdutosPagamento{

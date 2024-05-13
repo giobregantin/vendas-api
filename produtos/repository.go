@@ -1,11 +1,11 @@
 package produtos
 
 import (
+	"context"
 	_ "log"
 
-	"github.com/hsxflowers/vendas-api/produtos/domain"
 	"github.com/hsxflowers/vendas-api/exceptions"
-	"github.com/labstack/gommon/log"
+	"github.com/hsxflowers/vendas-api/produtos/domain"
 )
 
 type ProdutoRepository struct {
@@ -18,20 +18,18 @@ func NewProdutosRepository(database domain.ProdutosDatabase) *ProdutoRepository 
 	}
 }
 
-func (repo *ProdutoRepository) VerificaDisponibilidade(produto *domain.Produto) (int, error) {
-	quantidade, err := repo.database.VerificaDisponibilidade(produto)
+func (repo *ProdutoRepository) VerificaDisponibilidade(ctx context.Context, produto *domain.Produto) (int, error) {
+	quantidade, err := repo.database.VerificaDisponibilidade(ctx, produto)
 	if err != nil {
-		log.Error("cat_repo: error on create produto in the database", err)
 		return 0, exceptions.New(exceptions.ErrInternalServer, err)
 	}
 
 	return quantidade, nil
 }
 
-func (repo *ProdutoRepository) RemoveQuantidade(produto *domain.Produto) error {
-	err := repo.database.RemoveQuantidade(produto)
+func (repo *ProdutoRepository) RemoveQuantidade(ctx context.Context, produto *domain.Produto) error {
+	err := repo.database.RemoveQuantidade(ctx, produto)
 	if err != nil {
-		log.Error("cat_repo: error on create produto in the database", err)
 		return exceptions.New(exceptions.ErrInternalServer, err)
 	}
 

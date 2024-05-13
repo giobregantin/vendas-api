@@ -6,6 +6,7 @@ import (
 	"github.com/hsxflowers/vendas-api/produtos/domain"
 
 	"github.com/hsxflowers/vendas-api/exceptions"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
 
@@ -33,7 +34,7 @@ func NewProdutosHandler(ctx context.Context, produtosService domain.Service) Pro
 //	@Failure		400		"Erros de validação ou request indevido"
 //	@Failure		500			"internal Server Error"
 //	@Router			/channels [post]
-func (h *ProdutosHandler) Create() (*domain.CodigoRastreio, error) {
+func (h *ProdutosHandler) Create(c echo.Context) (*domain.CodigoRastreio, error) {
 	req := new(domain.ProdutosRequest)
 
 	if err := c.Bind(req); err != nil {
@@ -41,7 +42,7 @@ func (h *ProdutosHandler) Create() (*domain.CodigoRastreio, error) {
 		return nil, exceptions.New(exceptions.ErrBadData, err)
 	}
 
-	codigo, err := h.produtosService.Create(req)
+	codigo, err := h.produtosService.Create(h.ctx, req)
 	if err != nil {
 		return nil, err
 	}

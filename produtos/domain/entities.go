@@ -1,19 +1,21 @@
 package domain
 
+import "context"
+
 const MIN_LENGTH_CAT_ID = 3
 
 type ProdutosStorage interface {
-	VerificaDisponibilidade(produto *Produto) (int, error)
-	RemoveQuantidade(produto *Produto) error
+	VerificaDisponibilidade(ctx context.Context, produto *Produto) (int, error)
+	RemoveQuantidade(ctx context.Context, produto *Produto) error
 }
 
 type ProdutosDatabase interface {
-	VerificaDisponibilidade(produto *Produto) (int, error)
-	RemoveQuantidade(produto *Produto) error
+	VerificaDisponibilidade(ctx context.Context, produto *Produto) (int, error)
+	RemoveQuantidade(ctx context.Context, produto *Produto) error
 }
 
 type Service interface {
-	Create(produto *ProdutosRequest) (*CodigoRastreio, error)
+	Create(ctx context.Context, produto *ProdutosRequest) (*CodigoRastreio, error)
 }
 
 func (u *Produto) ToProdutosDomain() *Produto {
