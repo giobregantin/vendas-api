@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"database/sql"
+	"net/http"
 
 	_ "github.com/lib/pq"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/hsxflowers/vendas-api/produtos/domain"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func Handlers(envs *config.Environments) *echo.Echo {
@@ -55,11 +55,15 @@ func Handlers(envs *config.Environments) *echo.Echo {
 	produtosService := produtos.NewProdutosService(produtosRepository, produtosConsumer)
 	produtosHandler := produtosHandler.NewProdutosHandler(ctx, produtosService)
 
-	e.GET("/swagger*", echoSwagger.WrapHandler)
-
 	produtos := e.Group("produtos")
 
-	produtos.POST("", produtosHandler.Create)
+	produtos.POST("", func(c echo.Context) error {
+		result, err := produtosHandler.Create(c)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return c.JSON(http.StatusOK, result)
+	})
 
 	return e
 }
